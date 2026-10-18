@@ -62,11 +62,6 @@ export async function uploadToPresignedUrl(
           (event.loaded / event.total) * 100,
         );
 
-        console.log(
-          `Upload progress: ${percent}%`,
-          `${event.loaded}/${event.total} bytes`,
-        );
-
         onProgress?.(percent);
       }
     };
