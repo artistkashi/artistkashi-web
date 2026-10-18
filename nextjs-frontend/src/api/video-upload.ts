@@ -34,8 +34,19 @@ export async function uploadToPresignedUrl(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
+    let settled = false;
+
     const cleanup = () => {
       signal?.removeEventListener("abort", handleAbort);
+    };
+
+    const finish = (
+      callback: () => void,
+    ) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      callback();
     };
 
     const handleAbort = () => xhr.abort();
@@ -46,7 +57,8 @@ export async function uploadToPresignedUrl(
     }
 
     xhr.open("PUT", url);
-    xhr.timeout = 60 * 60 * 1000; // 1 hour
+    xhr.timeout = 0; // Disable the browser's request timeout
+
     xhr.setRequestHeader(
       "Content-Type",
       file.type || "application/octet-stream",
@@ -58,47 +70,51 @@ export async function uploadToPresignedUrl(
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
-        const percent = Math.round(
-          (event.loaded / event.total) * 100,
+        onProgress?.(
+          Math.round((event.loaded / event.total) * 100),
         );
-
-        onProgress?.(percent);
       }
     };
 
     xhr.onload = () => {
-      cleanup();
-
       if (xhr.status >= 200 && xhr.status < 300) {
-        console.log("R2 upload completed:", xhr.status);
-        resolve();
+        finish(() => {
+          console.log("R2 upload completed:", xhr.status);
+          resolve();
+        });
       } else {
-        console.error("R2 upload failed:", xhr.status, xhr.responseText);
-        reject(
-          new Error(
-            `Upload failed: HTTP ${xhr.status} - ${xhr.responseText}`,
-          ),
-        );
+        finish(() => {
+          reject(
+            new Error(
+              `Upload failed: HTTP ${xhr.status} - ${xhr.responseText}`,
+            ),
+          );
+        });
       }
     };
 
     xhr.onerror = () => {
-      cleanup();
-      console.error("Network/CORS error during R2 upload");
-      reject(new Error("Upload failed: network or CORS error"));
+      finish(() => {
+        reject(new Error("Upload failed: network or CORS error"));
+      });
     };
 
     xhr.ontimeout = () => {
-      cleanup();
-      reject(new Error("Upload timed out after 15 minutes"));
+      finish(() => {
+        reject(new Error("Video upload timed out."));
+      });
     };
 
     xhr.onabort = () => {
-      cleanup();
-      reject(new DOMException("Upload aborted", "AbortError"));
+      finish(() => {
+        reject(new DOMException("Upload aborted", "AbortError"));
+      });
     };
 
-    signal?.addEventListener("abort", handleAbort, { once: true });
+    signal?.addEventListener("abort", handleAbort, {
+      once: true,
+    });
+
     xhr.send(file);
   });
 }
