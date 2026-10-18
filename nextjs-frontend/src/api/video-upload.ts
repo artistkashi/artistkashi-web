@@ -46,7 +46,7 @@ export async function uploadToPresignedUrl(
     }
 
     xhr.open("PUT", url);
-    xhr.timeout = 15 * 60 * 1000; // 15 minutes
+    xhr.timeout = 60 * 60 * 1000; // 1 hour
     xhr.setRequestHeader(
       "Content-Type",
       file.type || "application/octet-stream",
