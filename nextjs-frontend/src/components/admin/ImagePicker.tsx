@@ -9,7 +9,7 @@ import { getErrorMessage } from "@/lib/error-handler";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_IMAGE_SIZE_MB = MAX_IMAGE_SIZE / (1024 * 1024);
 
 interface ImagePickerProps {

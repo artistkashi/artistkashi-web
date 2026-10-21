@@ -218,7 +218,7 @@ function DashboardContent({ initialTab }: { initialTab: string }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 100 * 1024 * 1024) {
       toast.error("Image must be under 5MB");
       return;
     }
@@ -734,7 +734,7 @@ function DashboardContent({ initialTab }: { initialTab: string }) {
                                   onChange={handleFileChange}
                                 />
                                 <p className="text-tiny font-mono text-text-muted mt-1.5">
-                                  JPG, PNG or WebP. Max 5MB.
+                                  JPG, PNG or WebP. Max 100MB.
                                 </p>
                               </div>
                             )}

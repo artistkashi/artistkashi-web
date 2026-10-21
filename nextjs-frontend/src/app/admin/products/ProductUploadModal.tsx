@@ -438,10 +438,15 @@ export default function ProductUploadModal({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    const MAX_UPLOAD_SIZE = 100 * 1024 * 1024;
     const currentImages = watch("images");
     const hasPrimary = currentImages.some((img) => img.is_primary);
 
     files.forEach((file, index) => {
+      if (file.size > MAX_UPLOAD_SIZE) {
+        toast.error("Image must be under " +  100 + "MB");
+        return;
+      }
       appendImage({
         file,
         image_url: URL.createObjectURL(file),
