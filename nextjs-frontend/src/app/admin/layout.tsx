@@ -19,6 +19,7 @@ import {
   Search,
   Settings,
   ShoppingBag,
+  Tag,
   Users,
   X,
 } from "lucide-react";
@@ -63,6 +64,7 @@ export default function AdminLayout({
     { label: "Products", href: "/admin/products", icon: Package },
     { label: "Catalog", href: "/admin/catalog", icon: Library },
     { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+    { label: "Coupons", href: "/admin/coupons", icon: Tag },
     { label: "Users", href: "/admin/users", icon: Users },
     { label: "Settings", href: "/admin/settings", icon: Settings },
   ];

@@ -7,7 +7,7 @@ type SdkCall<TData> = Promise<{
 
 type SdkPaginatedCall<TData> = Promise<{
   data?: {
-    data?: TData[] | null;
+    data?: TData[] | { data?: TData[] | null; pagination?: Pagination } | null;
     pagination?: Pagination;
     message?: string;
   } | null;
@@ -49,10 +49,14 @@ export async function unwrapPaginated<TData>(
     throw error ?? new Error("Request failed");
   }
 
-  return {
-    data: body.data ?? [],
-    pagination: body.pagination!,
-  };
+  const nested = body.data;
+  if (Array.isArray(nested)) {
+    return { data: nested, pagination: body.pagination! };
+  }
+  if (nested && typeof nested === "object") {
+    return { data: nested.data ?? [], pagination: nested.pagination! };
+  }
+  return { data: [], pagination: body.pagination! };
 }
 
 

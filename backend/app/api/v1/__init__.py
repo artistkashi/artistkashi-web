@@ -6,6 +6,7 @@ from .addresses import router as addresses_router
 from .admin import router as admin_router
 from .auth import router as auth_router
 from .cart import router as cart_router
+from .coupons import router as coupons_router
 from .course_categories import router as course_categories_router
 from .course_payments import router as course_payments_router
 from .course_reviews import router as course_reviews_router
@@ -15,8 +16,8 @@ from .health import router as health_router
 from .orders import router as orders_router
 from .product_reviews import router as product_reviews_rounter
 from .products import router as products_router
-from .site_config import router as site_config_router
 from .progress import router as progress_router
+from .site_config import router as site_config_router
 from .status import router as status_router
 from .users import router as users_router
 from .wishlist import router as wishlist_router
@@ -42,3 +43,4 @@ router.include_router(orders_router)
 router.include_router(cart_router)
 router.include_router(wishlist_router)
 router.include_router(status_router)
+router.include_router(coupons_router)

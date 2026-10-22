@@ -179,6 +179,366 @@ export type AddressUpdate = {
 };
 
 /**
+ * AdminCouponCreate
+ *
+ * Schema for admin creating a coupon.
+ */
+export type AdminCouponCreate = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    discount_type: DiscountTypeApi;
+    /**
+     * Discount Value
+     */
+    discount_value: number | string;
+    /**
+     * Max Discount
+     */
+    max_discount?: number | string | null;
+    applies_to?: AppliesToApi;
+    restriction_type?: RestrictionTypeApi;
+    /**
+     * Min Order Amount
+     */
+    min_order_amount?: number | string;
+    /**
+     * Usage Limit
+     */
+    usage_limit?: number | null;
+    /**
+     * Per User Limit
+     */
+    per_user_limit?: number;
+    /**
+     * Starts At
+     */
+    starts_at?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+    /**
+     * Course Ids
+     */
+    course_ids?: Array<string>;
+    /**
+     * Painting Ids
+     */
+    painting_ids?: Array<string>;
+};
+
+/**
+ * AdminCouponListRead
+ */
+export type AdminCouponListRead = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Discount Type
+     */
+    discount_type: string;
+    /**
+     * Discount Value
+     */
+    discount_value: string;
+    /**
+     * Max Discount
+     */
+    max_discount?: string | null;
+    /**
+     * Applies To
+     */
+    applies_to: string;
+    /**
+     * Restriction Type
+     */
+    restriction_type: string;
+    /**
+     * Min Order Amount
+     */
+    min_order_amount: string;
+    /**
+     * Usage Limit
+     */
+    usage_limit?: number | null;
+    /**
+     * Usage Count
+     */
+    usage_count: number;
+    /**
+     * Per User Limit
+     */
+    per_user_limit: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Starts At
+     */
+    starts_at?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * AdminCouponRead
+ */
+export type AdminCouponRead = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Discount Type
+     */
+    discount_type: string;
+    /**
+     * Discount Value
+     */
+    discount_value: string;
+    /**
+     * Max Discount
+     */
+    max_discount?: string | null;
+    /**
+     * Applies To
+     */
+    applies_to: string;
+    /**
+     * Restriction Type
+     */
+    restriction_type: string;
+    /**
+     * Min Order Amount
+     */
+    min_order_amount: string;
+    /**
+     * Usage Limit
+     */
+    usage_limit?: number | null;
+    /**
+     * Usage Count
+     */
+    usage_count: number;
+    /**
+     * Per User Limit
+     */
+    per_user_limit: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Starts At
+     */
+    starts_at?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+    /**
+     * Course Ids
+     */
+    course_ids?: Array<string>;
+    /**
+     * Painting Ids
+     */
+    painting_ids?: Array<string>;
+};
+
+/**
+ * AdminCouponUpdate
+ */
+export type AdminCouponUpdate = {
+    /**
+     * Description
+     */
+    description?: string | null;
+    discount_type?: DiscountTypeApi | null;
+    /**
+     * Discount Value
+     */
+    discount_value?: number | string | null;
+    /**
+     * Max Discount
+     */
+    max_discount?: number | string | null;
+    applies_to?: AppliesToApi | null;
+    restriction_type?: RestrictionTypeApi | null;
+    /**
+     * Min Order Amount
+     */
+    min_order_amount?: number | string | null;
+    /**
+     * Usage Limit
+     */
+    usage_limit?: number | null;
+    /**
+     * Per User Limit
+     */
+    per_user_limit?: number | null;
+    /**
+     * Starts At
+     */
+    starts_at?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Course Ids
+     */
+    course_ids?: Array<string> | null;
+    /**
+     * Painting Ids
+     */
+    painting_ids?: Array<string> | null;
+};
+
+/**
+ * AdminCouponUsageListRead
+ */
+export type AdminCouponUsageListRead = {
+    /**
+     * Coupon Code
+     */
+    coupon_code: string;
+    /**
+     * Coupon Id
+     */
+    coupon_id: string;
+    /**
+     * Total Usage
+     */
+    total_usage: number;
+    /**
+     * Total Discount Amount
+     */
+    total_discount_amount?: string;
+    /**
+     * Usage Limit
+     */
+    usage_limit?: number | null;
+    /**
+     * Page
+     */
+    page?: number;
+    /**
+     * Page Size
+     */
+    page_size?: number;
+    /**
+     * Total Items
+     */
+    total_items?: number;
+    /**
+     * Total Pages
+     */
+    total_pages?: number;
+    /**
+     * Usages
+     */
+    usages?: Array<AdminCouponUsageRead>;
+};
+
+/**
+ * AdminCouponUsageRead
+ */
+export type AdminCouponUsageRead = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * User Full Name
+     */
+    user_full_name?: string | null;
+    /**
+     * User Email
+     */
+    user_email?: string | null;
+    /**
+     * Order Id
+     */
+    order_id?: string | null;
+    /**
+     * Course Payment Id
+     */
+    course_payment_id?: string | null;
+    /**
+     * Discount Amount
+     */
+    discount_amount: string;
+    /**
+     * Used At
+     */
+    used_at: string;
+    /**
+     * Order Number
+     */
+    order_number?: string | null;
+    /**
+     * Course Title
+     */
+    course_title?: string | null;
+};
+
+/**
  * AdminCoursePaymentRead
  */
 export type AdminCoursePaymentRead = {
@@ -222,6 +582,26 @@ export type AdminCoursePaymentRead = {
      * Amount
      */
     amount: string;
+    /**
+     * Subtotal
+     */
+    subtotal?: string;
+    /**
+     * Discount Amount
+     */
+    discount_amount?: string;
+    /**
+     * Gateway Fee
+     */
+    gateway_fee?: string;
+    /**
+     * Coupon Id
+     */
+    coupon_id?: string | null;
+    /**
+     * Coupon Code
+     */
+    coupon_code?: string | null;
     /**
      * Status
      */
@@ -573,6 +953,11 @@ export type AdminUserListRead = {
 };
 
 /**
+ * AppliesToAPI
+ */
+export type AppliesToApi = 'all' | 'courses' | 'paintings' | 'selected_courses' | 'selected_paintings';
+
+/**
  * AuthProvidersResponse
  */
 export type AuthProvidersResponse = {
@@ -883,6 +1268,114 @@ export type ConfirmVideoUploadRequest = {
      * Duration Seconds
      */
     duration_seconds?: number | null;
+};
+
+/**
+ * CouponValidateRequest
+ */
+export type CouponValidateRequest = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Items
+     */
+    items: Array<CouponValidationItem>;
+};
+
+/**
+ * CouponValidateResponse
+ */
+export type CouponValidateResponse = {
+    /**
+     * Valid
+     */
+    valid: boolean;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Discount Type
+     */
+    discount_type: string;
+    /**
+     * Discount Value
+     */
+    discount_value: string;
+    /**
+     * Max Discount
+     */
+    max_discount?: string | null;
+    /**
+     * Applies To
+     */
+    applies_to: string;
+    /**
+     * Restriction Type
+     */
+    restriction_type: string;
+    /**
+     * Min Order Amount
+     */
+    min_order_amount: string;
+    /**
+     * Cart Subtotal
+     */
+    cart_subtotal: string;
+    /**
+     * Eligible Subtotal
+     */
+    eligible_subtotal: string;
+    /**
+     * Discount Amount
+     */
+    discount_amount: string;
+    /**
+     * Gateway Fee
+     */
+    gateway_fee: string;
+    /**
+     * Final Total
+     */
+    final_total: string;
+    /**
+     * Eligible Items
+     */
+    eligible_items?: Array<EligibleItemResponse>;
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Error Code
+     */
+    error_code?: string | null;
+};
+
+/**
+ * CouponValidationItem
+ *
+ * An item in the cart for coupon validation.
+ */
+export type CouponValidationItem = {
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Variant Id
+     */
+    variant_id?: string | null;
+    /**
+     * Quantity
+     */
+    quantity?: number;
 };
 
 /**
@@ -1572,6 +2065,16 @@ export type CourseProgressRead = {
 };
 
 /**
+ * CoursePurchaseRequest
+ */
+export type CoursePurchaseRequest = {
+    /**
+     * Coupon Code
+     */
+    coupon_code?: string | null;
+};
+
+/**
  * CoursePurchaseResponse
  */
 export type CoursePurchaseResponse = {
@@ -1937,6 +2440,49 @@ export type DetailedHealthData = {
 export type DimensionUnit = 'cm' | 'inch' | 'mm';
 
 /**
+ * DiscountTypeAPI
+ */
+export type DiscountTypeApi = 'percentage' | 'fixed';
+
+/**
+ * EligibleItemResponse
+ */
+export type EligibleItemResponse = {
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Variant Id
+     */
+    variant_id?: string | null;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Variant Name
+     */
+    variant_name?: string | null;
+    /**
+     * Quantity
+     */
+    quantity: number;
+    /**
+     * Unit Price
+     */
+    unit_price: string;
+    /**
+     * Line Total
+     */
+    line_total: string;
+};
+
+/**
  * FaqItem
  */
 export type FaqItem = {
@@ -2300,6 +2846,10 @@ export type OrderCreate = {
      * Items
      */
     items: Array<OrderItemBase>;
+    /**
+     * Coupon Code
+     */
+    coupon_code?: string | null;
 };
 
 /**
@@ -2580,6 +3130,30 @@ export type PaginatedResponseAddressRead = {
      * Data
      */
     data?: Array<AddressRead>;
+    pagination: Pagination;
+    meta?: Meta;
+};
+
+/**
+ * PaginatedResponse[AdminCouponListRead]
+ */
+export type PaginatedResponseAdminCouponListRead = {
+    /**
+     * Success
+     */
+    success?: boolean;
+    /**
+     * Status
+     */
+    status?: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data?: Array<AdminCouponListRead>;
     pagination: Pagination;
     meta?: Meta;
 };
@@ -3755,6 +4329,11 @@ export type ResetPasswordRequest = {
 };
 
 /**
+ * RestrictionTypeAPI
+ */
+export type RestrictionTypeApi = 'all_eligible' | 'selected_products';
+
+/**
  * ReviewCreate
  */
 export type ReviewCreate = {
@@ -3962,6 +4541,46 @@ export type SuccessResponseAddressRead = {
 };
 
 /**
+ * SuccessResponse[AdminCouponRead]
+ */
+export type SuccessResponseAdminCouponRead = {
+    /**
+     * Success
+     */
+    success?: boolean;
+    /**
+     * Status
+     */
+    status?: number;
+    /**
+     * Message
+     */
+    message: string;
+    data?: AdminCouponRead | null;
+    meta?: Meta;
+};
+
+/**
+ * SuccessResponse[AdminCouponUsageListRead]
+ */
+export type SuccessResponseAdminCouponUsageListRead = {
+    /**
+     * Success
+     */
+    success?: boolean;
+    /**
+     * Status
+     */
+    status?: number;
+    /**
+     * Message
+     */
+    message: string;
+    data?: AdminCouponUsageListRead | null;
+    meta?: Meta;
+};
+
+/**
  * SuccessResponse[AdminOrderDetailRead]
  */
 export type SuccessResponseAdminOrderDetailRead = {
@@ -4058,6 +4677,26 @@ export type SuccessResponseCartItemRead = {
      */
     message: string;
     data?: CartItemRead | null;
+    meta?: Meta;
+};
+
+/**
+ * SuccessResponse[CouponValidateResponse]
+ */
+export type SuccessResponseCouponValidateResponse = {
+    /**
+     * Success
+     */
+    success?: boolean;
+    /**
+     * Status
+     */
+    status?: number;
+    /**
+     * Message
+     */
+    message: string;
+    data?: CouponValidateResponse | null;
     meta?: Meta;
 };
 
@@ -4381,6 +5020,26 @@ export type SuccessResponseOrderRead = {
      */
     message: string;
     data?: OrderRead | null;
+    meta?: Meta;
+};
+
+/**
+ * SuccessResponse[PaginatedResponse[AdminCouponListRead]]
+ */
+export type SuccessResponsePaginatedResponseAdminCouponListRead = {
+    /**
+     * Success
+     */
+    success?: boolean;
+    /**
+     * Status
+     */
+    status?: number;
+    /**
+     * Message
+     */
+    message: string;
+    data?: PaginatedResponseAdminCouponListRead | null;
     meta?: Meta;
 };
 
@@ -8562,6 +9221,206 @@ export type ListCourseEnrolledStudentsResponses = {
 
 export type ListCourseEnrolledStudentsResponse = ListCourseEnrolledStudentsResponses[keyof ListCourseEnrolledStudentsResponses];
 
+export type ListCouponsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Search
+         */
+        search?: string | null;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+        /**
+         * Applies To
+         */
+        applies_to?: string | null;
+    };
+    url: '/api/admin/coupons';
+};
+
+export type ListCouponsErrors = {
+    /**
+     * Validation Error
+     */
+    422: ErrorResponse;
+};
+
+export type ListCouponsError = ListCouponsErrors[keyof ListCouponsErrors];
+
+export type ListCouponsResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponsePaginatedResponseAdminCouponListRead;
+};
+
+export type ListCouponsResponse = ListCouponsResponses[keyof ListCouponsResponses];
+
+export type CreateCouponData = {
+    body: AdminCouponCreate;
+    path?: never;
+    query?: never;
+    url: '/api/admin/coupons';
+};
+
+export type CreateCouponErrors = {
+    /**
+     * Validation Error
+     */
+    422: ErrorResponse;
+};
+
+export type CreateCouponError = CreateCouponErrors[keyof CreateCouponErrors];
+
+export type CreateCouponResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponseAdminCouponRead;
+};
+
+export type CreateCouponResponse = CreateCouponResponses[keyof CreateCouponResponses];
+
+export type DeleteCouponData = {
+    body?: never;
+    path: {
+        /**
+         * Coupon Id
+         */
+        coupon_id: string;
+    };
+    query?: never;
+    url: '/api/admin/coupons/{coupon_id}';
+};
+
+export type DeleteCouponErrors = {
+    /**
+     * Validation Error
+     */
+    422: ErrorResponse;
+};
+
+export type DeleteCouponError = DeleteCouponErrors[keyof DeleteCouponErrors];
+
+export type DeleteCouponResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponseNoneType;
+};
+
+export type DeleteCouponResponse = DeleteCouponResponses[keyof DeleteCouponResponses];
+
+export type GetCouponData = {
+    body?: never;
+    path: {
+        /**
+         * Coupon Id
+         */
+        coupon_id: string;
+    };
+    query?: never;
+    url: '/api/admin/coupons/{coupon_id}';
+};
+
+export type GetCouponErrors = {
+    /**
+     * Validation Error
+     */
+    422: ErrorResponse;
+};
+
+export type GetCouponError = GetCouponErrors[keyof GetCouponErrors];
+
+export type GetCouponResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponseAdminCouponRead;
+};
+
+export type GetCouponResponse = GetCouponResponses[keyof GetCouponResponses];
+
+export type UpdateCouponData = {
+    body: AdminCouponUpdate;
+    path: {
+        /**
+         * Coupon Id
+         */
+        coupon_id: string;
+    };
+    query?: never;
+    url: '/api/admin/coupons/{coupon_id}';
+};
+
+export type UpdateCouponErrors = {
+    /**
+     * Validation Error
+     */
+    422: ErrorResponse;
+};
+
+export type UpdateCouponError = UpdateCouponErrors[keyof UpdateCouponErrors];
+
+export type UpdateCouponResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponseAdminCouponRead;
+};
+
+export type UpdateCouponResponse = UpdateCouponResponses[keyof UpdateCouponResponses];
+
+export type GetCouponUsageData = {
+    body?: never;
+    path: {
+        /**
+         * Coupon Id
+         */
+        coupon_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/admin/coupons/{coupon_id}/usage';
+};
+
+export type GetCouponUsageErrors = {
+    /**
+     * Validation Error
+     */
+    422: ErrorResponse;
+};
+
+export type GetCouponUsageError = GetCouponUsageErrors[keyof GetCouponUsageErrors];
+
+export type GetCouponUsageResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponseAdminCouponUsageListRead;
+};
+
+export type GetCouponUsageResponse = GetCouponUsageResponses[keyof GetCouponUsageResponses];
+
 export type ListEnrollmentsData = {
     body?: never;
     path?: never;
@@ -10557,7 +11416,7 @@ export type GetLessonVideoResponses = {
 export type GetLessonVideoResponse = GetLessonVideoResponses[keyof GetLessonVideoResponses];
 
 export type InitiateCoursePurchaseData = {
-    body?: never;
+    body?: CoursePurchaseRequest;
     path: {
         /**
          * Slug
@@ -11545,3 +12404,28 @@ export type GetCountsResponses = {
 };
 
 export type GetCountsResponse = GetCountsResponses[keyof GetCountsResponses];
+
+export type ValidateCouponData = {
+    body: CouponValidateRequest;
+    path?: never;
+    query?: never;
+    url: '/api/coupons/validate';
+};
+
+export type ValidateCouponErrors = {
+    /**
+     * Validation Error
+     */
+    422: ErrorResponse;
+};
+
+export type ValidateCouponError = ValidateCouponErrors[keyof ValidateCouponErrors];
+
+export type ValidateCouponResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponseCouponValidateResponse;
+};
+
+export type ValidateCouponResponse = ValidateCouponResponses[keyof ValidateCouponResponses];

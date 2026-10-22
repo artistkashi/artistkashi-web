@@ -1,5 +1,11 @@
 from app.crud.address import crud_address
 from app.crud.auth_provider import crud_auth_provider
+from app.crud.coupon import (
+    crud_coupon,
+    crud_coupon_course,
+    crud_coupon_painting,
+    crud_coupon_usage,
+)
 from app.crud.course import (
     crud_course,
     crud_course_category,
@@ -24,4 +30,8 @@ __all__ = [
     "crud_course_lesson",
     "crud_course_enrollment",
     "crud_lesson_progress",
+    "crud_coupon",
+    "crud_coupon_course",
+    "crud_coupon_painting",
+    "crud_coupon_usage",
 ]

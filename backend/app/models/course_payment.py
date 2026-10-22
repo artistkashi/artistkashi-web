@@ -4,11 +4,15 @@ import enum
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.coupon import Coupon
 
 
 class CoursePaymentStatus(enum.StrEnum):
@@ -45,15 +49,29 @@ class CoursePayment(Base, TimestampMixin):
         String(255), nullable=True, unique=True, index=True
     )
 
-    razorpay_payment_id: Mapped[str | None] = mapped_column(
-        String(255), nullable=True
+    razorpay_payment_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    razorpay_signature: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    subtotal: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), nullable=False, default=Decimal("0")
     )
 
-    razorpay_signature: Mapped[str | None] = mapped_column(
-        String(500), nullable=True
+    discount_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0"), nullable=False
+    )
+
+    gateway_fee: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0"), nullable=False
     )
 
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+
+    coupon_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("coupons.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
+    coupon_code: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     status: Mapped[CoursePaymentStatus] = mapped_column(
         Enum(
@@ -73,3 +91,4 @@ class CoursePayment(Base, TimestampMixin):
 
     user = relationship("User", back_populates="course_payments")
     course = relationship("Course", back_populates="payments")
+    coupon = relationship("Coupon")

@@ -56,6 +56,7 @@ class OrderCreateDB(OrderBase):
 
 class OrderCreate(OrderBase):
     items: list[OrderItemBase]
+    coupon_code: str | None = None
 
 
 class OrderUpdate(BaseModel):

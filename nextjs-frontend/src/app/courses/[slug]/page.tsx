@@ -21,6 +21,7 @@ import { CourseReviewsSection } from "@/components/ui/CourseReviewsSection";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { RevealBlock } from "@/components/ui/misc";
 import { ModalType, StatusModal } from "@/components/ui/StatusModal";
+import { CouponInput } from "@/components/ui/CouponInput";
 import { useAuth } from "@/lib/auth-store";
 import { getSafeReturnTo } from "@/lib/auth-utils";
 import { useNavStore } from "@/lib/nav-store";
@@ -385,6 +386,14 @@ export default function CourseDetailPage({
   const [openSection, setOpenSection] = useState<number | null>(0);
   const [showDemo, setShowDemo] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [couponResult, setCouponResult] = useState<{
+    code: string;
+    discount_amount: number;
+    final_total: number;
+    gateway_fee: number;
+    discount_type: string;
+    discount_value: number;
+  } | null>(null);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     type: ModalType;
@@ -514,7 +523,7 @@ export default function CourseDetailPage({
     }
     setIsPurchasing(true);
     try {
-      const result = await unwrap(initiateCoursePurchase({ path: { slug } }));
+      const result = await unwrap(initiateCoursePurchase({ path: { slug }, body: { coupon_code: couponResult?.code } }));
       handleRazorpayPayment(result);
     } catch (err: unknown) {
       const message =
@@ -847,16 +856,38 @@ export default function CourseDetailPage({
                       </PrimaryBtn>
                     </div>
                   ) : Number(course.price) > 0 ? (
-                    <PrimaryBtn
-                      type="button"
-                      onClick={handleBuyCourse}
-                      disabled={isPurchasing}
-                      className="w-full justify-center mb-4"
-                    >
-                      {isPurchasing ? "PREPARING..." : "Buy Now"}{" "}
-                      <ArrowRight size={16} />
-                    </PrimaryBtn>
-                  ) : (
+                    <div className="space-y-3">
+                      <CouponInput
+                        cartItems={[{ type: "course", id: course.id, quantity: 1 }]}
+                        subtotal={Number(course.price)}
+                        onCouponApplied={(result) => {
+                          setCouponResult(result);
+                        }}
+                        onCouponRemoved={() => setCouponResult(null)}
+                        appliedCoupon={couponResult ? {
+                          code: couponResult.code,
+                          discount_amount: couponResult.discount_amount,
+                          discount_type: couponResult.discount_type,
+                          discount_value: couponResult.discount_value,
+                        } : null}
+                      />
+                      {couponResult && (
+                        <div className="flex justify-between text-sm text-text-muted" aria-live="polite">
+                          <span>Discount applied · payment fee included</span>
+                          <span className="font-semibold text-text-main">{displayPrice(couponResult.final_total)}</span>
+                        </div>
+                      )}
+                      <PrimaryBtn
+                        type="button"
+                        onClick={handleBuyCourse}
+                        disabled={isPurchasing}
+                        className="w-full justify-center mb-4"
+                      >
+                        {isPurchasing ? "PREPARING..." : "Buy Now"}{" "}
+                        <ArrowRight size={16} />
+                      </PrimaryBtn>
+                    </div>
+                    ) : (
                     <PrimaryBtn
                       type="button"
                       onClick={goToLesson}

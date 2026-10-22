@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.core.auth.dependencies import get_current_admin
 from app.schemas.responses import SuccessResponse
 
+from . import coupons as coupons_module
 from . import course_categories as course_categories_module
 from . import course_payments as course_payments_module
 from . import courses as courses_module
@@ -36,6 +37,7 @@ router.include_router(users_module.router)
 router.include_router(products_router)
 router.include_router(course_categories_module.router)
 router.include_router(courses_module.router)
+router.include_router(coupons_module.router)
 router.include_router(enrollments_module.router)
 router.include_router(sections_module.router)
 router.include_router(lessons_module.router)

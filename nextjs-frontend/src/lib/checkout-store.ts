@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface CheckoutItem {
+  cart_item_id?: number;
   product_id: string;
   variant_id: string | null;
   course_id: string | null;

@@ -31,7 +31,9 @@ export default function CartPage() {
   }, [loaded, fetchCart]);
 
   const total = items.reduce((sum, i) => {
-    const price = i.product?.price
+    const price = i.variant?.price
+      ? Number(i.variant.price)
+      : i.product?.price
       ? Number(i.product.price)
       : i.course?.price
         ? Number(i.course.price)
@@ -65,12 +67,15 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
-    const checkoutItems = items.map((i) => ({
+    const checkoutItems = items.filter((i) => i.product_id).map((i) => ({
+      cart_item_id: i.id,
       product_id: i.product_id ?? "",
       variant_id: i.variant_id ?? null,
       course_id: i.course_id ?? null,
       quantity: i.quantity ?? 1,
-      price: i.product?.price
+      price: i.variant?.price
+        ? Number(i.variant.price)
+        : i.product?.price
         ? Number(i.product.price)
         : i.course?.price
           ? Number(i.course.price)
@@ -148,7 +153,9 @@ export default function CartPage() {
               {items.map((item) => {
                 const isProduct = !!item.product;
                 const price = isProduct
-                  ? item.product?.price
+                  ? item.variant?.price
+                    ? Number(item.variant.price)
+                    : item.product?.price
                     ? Number(item.product.price)
                     : 0
                   : item.course?.price
@@ -279,11 +286,16 @@ export default function CartPage() {
                 </div>
                 <button
                   onClick={handleCheckout}
-                  disabled={items.length === 0}
+                  disabled={!items.some((item) => item.product_id)}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary/10 border border-primary/30 text-primary text-xs font-mono tracking-widest uppercase hover:bg-primary/20 transition-colors rounded disabled:opacity-50 mt-4"
                 >
                   Proceed to Billing <ArrowRight size={14} />
                 </button>
+                {!items.some((item) => item.product_id) && items.some((item) => item.course_id) && (
+                  <p className="text-xs text-text-muted text-center">
+                    Course purchases are completed from each course page.
+                  </p>
+                )}
               </div>
             </div>
           </div>

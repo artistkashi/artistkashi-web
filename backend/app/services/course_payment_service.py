@@ -18,6 +18,7 @@ from app.core.exceptions import (
     ServiceException,
     ValidationException,
 )
+from app.crud.coupon import crud_coupon
 from app.crud.course import crud_course, crud_course_enrollment, crud_course_payment
 from app.crud.user import crud_user as crud_user_payment
 from app.models.course import Course
@@ -32,9 +33,11 @@ from app.schemas.course_payment import (
     CoursePaymentCreate,
     CoursePaymentRead,
     CoursePaymentVerificationRequest,
+    CoursePurchaseRequest,
     CoursePurchaseResponse,
 )
 from app.schemas.user import UserRead
+from app.services.coupon_service import coupon_service
 from app.services.email.email import send_course_purchase_email
 from app.services.enrollment_service import enrollment_service
 from app.services.progress_service import progress_service
@@ -52,6 +55,7 @@ class CoursePaymentService:
         session: AsyncSession,
         user_id: uuid.UUID,
         slug: str,
+        payload: CoursePurchaseRequest,
     ) -> CoursePurchaseResponse:
         course = await crud_course.get(
             db=session,
@@ -94,13 +98,59 @@ class CoursePaymentService:
                 error_code=ErrorCode.COURSE_PAYMENT_ALREADY_PAID,
             )
 
+        # Validate coupon if provided
+        coupon_code = payload.coupon_code
+        discount_amount = Decimal("0")
+        gateway_fee = Decimal("0")
+        final_amount = course.price
+        coupon = None
+
+        if coupon_code:
+            # Validate coupon for this course
+            coupon_items = [
+                {
+                    "type": "course",
+                    "id": course.id,
+                    "quantity": 1,
+                    "unit_price": course.price,
+                }
+            ]
+
+            coupon_result = await coupon_service.validate_coupon_for_items(
+                session=session,
+                coupon_code=coupon_code,
+                user_id=user_id,
+                cart_items=coupon_items,
+            )
+
+            if not coupon_result["valid"]:
+                raise ValidationException(message="Invalid coupon code")
+
+            coupon = await coupon_service.get_coupon_by_code(session, coupon_code)
+            coupon_code = coupon_code
+            discount_amount = coupon_result["discount_amount"]
+            gateway_fee = coupon_result["gateway_fee"]
+            final_amount = coupon_result["final_total"]
+        else:
+            # No coupon - calculate normally
+            discount_amount = Decimal("0")
+            gateway_fee = coupon_service.calculate_gateway_fee(course.price)
+            final_amount = (course.price - Decimal("0") + gateway_fee).quantize(
+                Decimal("0.01")
+            )
+
         try:
             payment = await crud_course_payment.create(
                 db=session,
                 object=CoursePaymentCreate(
                     user_id=user_id,
                     course_id=course.id,
-                    amount=course.price,
+                    amount=final_amount,
+                    subtotal=course.price,
+                    discount_amount=discount_amount,
+                    gateway_fee=gateway_fee,
+                    coupon_id=coupon.id if coupon else None,
+                    coupon_code=coupon_code,
                     razorpay_order_id="pending",
                     status=CoursePaymentStatus.PENDING,
                 ),
@@ -111,7 +161,7 @@ class CoursePaymentService:
 
             razorpay_order = self.razorpay_client.order.create(
                 data={
-                    "amount": int(course.price * 100),
+                    "amount": int(final_amount * 100),
                     "currency": "INR",
                     "receipt": str(payment.id),
                 }
@@ -130,7 +180,7 @@ class CoursePaymentService:
 
             return CoursePurchaseResponse(
                 razorpay_order_id=razorpay_order["id"],
-                amount=course.price,
+                amount=final_amount,
                 course_id=course.id,
                 course_title=course.title,
             )
@@ -164,14 +214,16 @@ class CoursePaymentService:
                 error_code=ErrorCode.COURSE_NOT_FOUND,
             )
 
-        payment = await crud_course_payment.get(
-            db=session,
-            razorpay_order_id=payload.razorpay_order_id,
-            user_id=user_id,
-            course_id=course.id,
-            schema_to_select=CoursePaymentRead,
-            return_as_model=True,
+        payment_result = await session.execute(
+            select(CoursePayment)
+            .where(
+                CoursePayment.razorpay_order_id == payload.razorpay_order_id,
+                CoursePayment.user_id == user_id,
+                CoursePayment.course_id == course.id,
+            )
+            .with_for_update()
         )
+        payment = payment_result.scalar_one_or_none()
         if not payment:
             raise NotFoundException(
                 resource="Course Payment",
@@ -180,8 +232,13 @@ class CoursePaymentService:
             )
 
         if payment.status == CoursePaymentStatus.PAID:
+            enrollment = await enrollment_service.get_user_course_enrollment(
+                session=session, user_id=user_id, course_id=course.id
+            )
+            if enrollment:
+                return enrollment
             raise ConflictException(
-                message="Payment already verified for this order",
+                message="Payment is paid but enrollment is missing; contact support",
                 error_code=ErrorCode.COURSE_PAYMENT_ALREADY_PAID,
             )
 
@@ -202,6 +259,17 @@ class CoursePaymentService:
             raise ValidationException("Invalid payment signature") from exc
 
         try:
+            # Consume coupon if one was used
+            if payment.coupon_id and payment.discount_amount > 0:
+                await coupon_service.consume_coupon(
+                    session=session,
+                    coupon=await crud_coupon.get(session, id=payment.coupon_id),
+                    user_id=user_id,
+                    order_id=None,
+                    course_payment_id=payment.id,
+                    discount_amount=payment.discount_amount,
+                )
+
             await crud_course_payment.update(
                 db=session,
                 id=payment.id,

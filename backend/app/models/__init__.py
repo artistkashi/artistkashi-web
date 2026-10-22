@@ -1,6 +1,7 @@
 from app.models.address import Address
 from app.models.base import Base
 from app.models.cart import CartItem
+from app.models.coupon import Coupon, CouponCourse, CouponPainting, CouponUsage
 from app.models.course import Course
 from app.models.course_category import CourseCategory
 from app.models.course_enrollment import CourseEnrollment
@@ -49,4 +50,8 @@ __all__ = [
     "Wishlist",
     "Order",
     "OrderItem",
+    "Coupon",
+    "CouponCourse",
+    "CouponPainting",
+    "CouponUsage",
 ]

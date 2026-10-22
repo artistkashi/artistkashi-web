@@ -13,12 +13,17 @@ class CoursePaymentCreate(BaseModel):
     user_id: uuid.UUID
     course_id: uuid.UUID
     amount: Decimal
+    subtotal: Decimal = Decimal("0")
+    discount_amount: Decimal = Decimal("0")
+    gateway_fee: Decimal = Decimal("0")
+    coupon_id: uuid.UUID | None = None
+    coupon_code: str | None = None
     razorpay_order_id: str | None = None
     status: str
 
 
 class CoursePurchaseRequest(BaseModel):
-    pass
+    coupon_code: str | None = None
 
 
 class CoursePurchaseResponse(BaseModel):
@@ -47,6 +52,11 @@ class CoursePaymentRead(TimestampSchemaRead):
     razorpay_payment_id: str | None = None
     razorpay_signature: str | None = None
     amount: Decimal
+    subtotal: Decimal = Decimal("0")
+    discount_amount: Decimal = Decimal("0")
+    gateway_fee: Decimal = Decimal("0")
+    coupon_id: uuid.UUID | None = None
+    coupon_code: str | None = None
     status: str
     paid_at: datetime | None = None
     admin_note: str | None = None
@@ -63,9 +73,7 @@ class AdminDirectEnrollRequest(BaseModel):
     """Admin records an offline payment and enrolls a student directly."""
 
     user_id: uuid.UUID
-    amount_paid: Decimal = Field(
-        ..., gt=0, decimal_places=2, max_digits=10
-    )
+    amount_paid: Decimal = Field(..., gt=0, decimal_places=2, max_digits=10)
     note: str | None = Field(None, max_length=1000)
 
 

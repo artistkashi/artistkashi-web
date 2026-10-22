@@ -6,6 +6,7 @@ from app.api.dependencies import CurrentUserDep, DatabaseDep
 from app.schemas.course_enrollment import CourseEnrollmentRead
 from app.schemas.course_payment import (
     CoursePaymentVerificationRequest,
+    CoursePurchaseRequest,
     CoursePurchaseResponse,
 )
 from app.schemas.responses import SuccessResponse
@@ -18,10 +19,13 @@ router = APIRouter(tags=["course-payments"])
     "/courses/{slug}/purchase", response_model=SuccessResponse[CoursePurchaseResponse]
 )
 async def initiate_course_purchase(
-    slug: str, session: DatabaseDep, current_user: CurrentUserDep
+    slug: str,
+    session: DatabaseDep,
+    current_user: CurrentUserDep,
+    payload: CoursePurchaseRequest = CoursePurchaseRequest(),
 ):
     result = await course_payment_service.initiate_purchase(
-        session=session, user_id=current_user.id, slug=slug
+        session=session, user_id=current_user.id, slug=slug, payload=payload
     )
     return SuccessResponse(message="Purchase initiated successfully", data=result)
 

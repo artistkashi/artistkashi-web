@@ -4,11 +4,15 @@ import enum
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.coupon import Coupon
 
 
 class OrderStatus(enum.StrEnum):
@@ -39,7 +43,25 @@ class Order(Base, TimestampMixin):
         index=True,
     )
 
+    subtotal: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), nullable=False, default=Decimal("0")
+    )
+
+    discount_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0"), nullable=False
+    )
+
+    gateway_fee: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0"), nullable=False
+    )
+
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+
+    coupon_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("coupons.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
+    coupon_code: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     status: Mapped[OrderStatus] = mapped_column(
         Enum(
@@ -90,6 +112,7 @@ class Order(Base, TimestampMixin):
     )
     shipping_address = relationship("Address", foreign_keys=[shipping_address_id])
     billing_address = relationship("Address", foreign_keys=[billing_address_id])
+    coupon = relationship("Coupon")
 
 
 class OrderItem(Base):
