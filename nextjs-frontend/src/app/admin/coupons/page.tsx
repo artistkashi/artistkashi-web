@@ -77,9 +77,7 @@ export default function AdminCouponsPage() {
         accessorKey: "discount_type",
         header: "Type",
         cell: ({ row }) => {
-          const type = row.getValue("discount_type");
-          const value = row.getValue("discount_value");
-          const max = row.getValue("max_discount") as number | null;
+          const { discount_type: type, discount_value: value, max_discount: max } = row.original;
           return (
             <span className="text-sm">
               {type === "percentage" ? `${value}%` : `₹${value}`}
