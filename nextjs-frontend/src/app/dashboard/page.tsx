@@ -218,8 +218,9 @@ function DashboardContent({ initialTab }: { initialTab: string }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+    const MAX_UPLOAD_SIZE = (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) * 1024 * 1024;
+    if (file.size > MAX_UPLOAD_SIZE) {
+      toast.error("Image must be under " + (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) + "MB");
       return;
     }
 
@@ -734,7 +735,7 @@ function DashboardContent({ initialTab }: { initialTab: string }) {
                                   onChange={handleFileChange}
                                 />
                                 <p className="text-tiny font-mono text-text-muted mt-1.5">
-                                  JPG, PNG or WebP. Max 5MB.
+                                  JPG, PNG or WebP. "Max " + String(Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) + "MB."
                                 </p>
                               </div>
                             )}

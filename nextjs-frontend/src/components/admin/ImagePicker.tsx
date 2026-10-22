@@ -9,7 +9,7 @@ import { getErrorMessage } from "@/lib/error-handler";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) * 1024 * 1024;
 const MAX_IMAGE_SIZE_MB = MAX_IMAGE_SIZE / (1024 * 1024);
 
 interface ImagePickerProps {
@@ -53,7 +53,7 @@ export function ImagePicker({
     } catch (err) {
       const axiosError = err as AxiosError;
       if (axiosError.response?.status === 413) {
-        toast.error(`Image too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB.`);
+        toast.error(`Image too large. Maximum size is ${Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100}MB.`);
       } else {
         toast.error(getErrorMessage(err));
       }

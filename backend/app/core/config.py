@@ -137,6 +137,10 @@ class Settings(BaseSettings):
     FFMPEG_PATH: str = "ffmpeg"
     FFPROBE_PATH: str = "ffprobe"
 
+    # ==================== UPLOAD ====================
+
+    MAX_UPLOAD_SIZE_MB: int = 100
+
     # ==================== GOOGLE OAUTH ====================
 
     GOOGLE_CLIENT_ID: str | None = None

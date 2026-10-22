@@ -1,21 +1,23 @@
 import asyncio
 import uuid
-from urllib.parse import urlsplit, urlunsplit
+from typing import TYPE_CHECKING
+from urllib.parse import urlsplit
 
 import boto3
 from fastapi import UploadFile
 
-from app.core.config import settings
-from app.core.exceptions import (
-    ServiceException,
-    ValidationException,
-)
+if TYPE_CHECKING:
+    from app.core.exceptions import ServiceException, ValidationException
 
-MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024  # 5MB
+
+def get_max_image_size_bytes() -> int:
+    from app.core.config import settings
+    return settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
 
 class StorageService:
     def __init__(self):
+        from app.core.config import settings
         self.client = boto3.client(
             "s3",
             endpoint_url=settings.S3_ENDPOINT_URL,
@@ -79,6 +81,7 @@ class StorageService:
         folder: str = "products",
         key: str | None = None,
     ) -> str:
+        from app.core.config import settings
         if not file.content_type:
             raise ValidationException("Invalid file")
 
@@ -93,10 +96,11 @@ class StorageService:
             raise ValidationException("Only JPEG, PNG, WEBP and GIF images are allowed")
 
         content = await file.read()
-        if len(content) > MAX_IMAGE_SIZE_BYTES:
+        max_size = get_max_image_size_bytes()
+        if len(content) > max_size:
             raise ValidationException(
-                f"Image size must be {MAX_IMAGE_SIZE_BYTES // (1024 * 1024)}MB or less"
-            )
+            f"Image size must be {settings.MAX_UPLOAD_SIZE_MB}MB or less"
+        )
         await file.seek(0)
 
         s3_key = await self._upload(file, folder, key=key)
@@ -108,6 +112,7 @@ class StorageService:
         folder: str = "videos",
         key: str | None = None,
     ) -> str:
+        from app.core.config import settings
         if not file.content_type:
             raise ValidationException("Invalid file")
 
@@ -253,4 +258,23 @@ class StorageService:
             return False
 
 
-storage_service = StorageService()
+_storage_service_instance = None
+
+
+def get_storage_service() -> StorageService:
+    global _storage_service_instance
+    if _storage_service_instance is None:
+        _storage_service_instance = StorageService()
+    return _storage_service_instance
+
+
+# Backward compatibility - will initialize on first access
+storage_service = None
+
+# Make storage_service a property-like object that initializes on first attribute access
+class _LazyStorageService:
+    def __getattr__(self, name):
+        return getattr(get_storage_service(), name)
+
+
+storage_service = _LazyStorageService()
