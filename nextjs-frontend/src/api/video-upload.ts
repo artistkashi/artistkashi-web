@@ -1,7 +1,7 @@
 import { unwrap } from "@/api/client-service";
 import {
-  initVideoUpload as initVideoUploadApi,
   confirmVideoUpload as confirmVideoUploadApi,
+  initVideoUpload as initVideoUploadApi,
 } from "@/api/openapi-client";
 
 export function getVideoDuration(file: File): Promise<number> {
@@ -28,33 +28,85 @@ export async function uploadToPresignedUrl(
   url: string,
   file: File,
   onProgress?: (percent: number) => void,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", file.type);
 
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable && onProgress) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
+    let settled = false;
+
+    const cleanup = () => {
+      signal?.removeEventListener("abort", handleAbort);
+    };
+
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      callback();
+    };
+
+    const handleAbort = () => xhr.abort();
+
+    if (signal?.aborted) {
+      reject(new DOMException("Upload aborted", "AbortError"));
+      return;
+    }
+
+    xhr.open("PUT", url);
+    xhr.timeout = 0; // Disable the browser's request timeout
+
+    xhr.setRequestHeader(
+      "Content-Type",
+      file.type || "application/octet-stream"
+    );
+
+    xhr.upload.onloadstart = () => {
+      console.log("Video upload started:", file.size, "bytes");
+    };
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress?.(Math.round((event.loaded / event.total) * 100));
       }
     };
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve();
+        finish(() => {
+          console.log("R2 upload completed:", xhr.status);
+          resolve();
+        });
       } else {
-        reject(new Error(`Upload failed with status ${xhr.status}`));
+        finish(() => {
+          reject(
+            new Error(`Upload failed: HTTP ${xhr.status} - ${xhr.responseText}`)
+          );
+        });
       }
     };
 
-    xhr.onerror = () => reject(new Error("Upload failed network error"));
-    xhr.onabort = () => reject(new DOMException("Upload aborted", "AbortError"));
+    xhr.onerror = () => {
+      finish(() => {
+        reject(new Error("Upload failed: network or CORS error"));
+      });
+    };
 
-    if (signal) {
-      signal.addEventListener("abort", () => xhr.abort());
-    }
+    xhr.ontimeout = () => {
+      finish(() => {
+        reject(new Error("Video upload timed out."));
+      });
+    };
+
+    xhr.onabort = () => {
+      finish(() => {
+        reject(new DOMException("Upload aborted", "AbortError"));
+      });
+    };
+
+    signal?.addEventListener("abort", handleAbort, {
+      once: true,
+    });
 
     xhr.send(file);
   });
@@ -65,14 +117,18 @@ export async function uploadLessonVideoViaPresigned(
   lessonId: string,
   file: File,
   onProgress?: (percent: number) => void,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
-  const { upload_url, video_key } = await unwrap(
+  const { upload_url, video_key } = (await unwrap(
     initVideoUploadApi({
       path: { course_id: courseId, lesson_id: lessonId },
-      body: { file_name: file.name, content_type: file.type, file_size: file.size },
-    }),
-  );
+      body: {
+        file_name: file.name,
+        content_type: file.type,
+        file_size: file.size,
+      },
+    })
+  )) as { upload_url: string; video_key: string };
 
   const [duration] = await Promise.all([
     getVideoDuration(file),
@@ -83,7 +139,7 @@ export async function uploadLessonVideoViaPresigned(
     confirmVideoUploadApi({
       path: { course_id: courseId, lesson_id: lessonId },
       body: { video_key, duration_seconds: Math.ceil(duration) },
-    }),
+    })
   );
 
   return lesson;

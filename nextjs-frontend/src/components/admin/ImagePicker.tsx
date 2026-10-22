@@ -1,15 +1,16 @@
 "use client";
 
+import type { AxiosError } from "axios";
 import { ImageUp, Link2, Loader2, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
-import type { AxiosError } from "axios";
 
 import { client } from "@/api/openapi-client/client.gen";
 import { getErrorMessage } from "@/lib/error-handler";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
-const MAX_IMAGE_SIZE = (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) * 1024 * 1024;
+const MAX_IMAGE_SIZE =
+  (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) * 1024 * 1024;
 const MAX_IMAGE_SIZE_MB = MAX_IMAGE_SIZE / (1024 * 1024);
 
 interface ImagePickerProps {
@@ -53,7 +54,9 @@ export function ImagePicker({
     } catch (err) {
       const axiosError = err as AxiosError;
       if (axiosError.response?.status === 413) {
-        toast.error(`Image too large. Maximum size is ${Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100}MB.`);
+        toast.error(
+          `Image too large. Maximum size is ${Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100}MB.`
+        );
       } else {
         toast.error(getErrorMessage(err));
       }

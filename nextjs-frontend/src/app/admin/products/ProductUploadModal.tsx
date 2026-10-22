@@ -26,6 +26,7 @@ import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getErrorMessage, getValidationErrors } from "@/lib/error-handler";
 import { slugify } from "@/lib/slugify";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
@@ -53,7 +54,6 @@ import {
   type Resolver,
   type UseFormSetError,
 } from "react-hook-form";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -438,13 +438,18 @@ export default function ProductUploadModal({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const MAX_UPLOAD_SIZE = (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) * 1024 * 1024;
+    const MAX_UPLOAD_SIZE =
+      (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) * 1024 * 1024;
     const currentImages = watch("images");
     const hasPrimary = currentImages.some((img) => img.is_primary);
 
     files.forEach((file, index) => {
       if (file.size > MAX_UPLOAD_SIZE) {
-        toast.error("Image must be under " + (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) + "MB");
+        toast.error(
+          "Image must be under " +
+            (Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB) || 100) +
+            "MB"
+        );
         return;
       }
       appendImage({

@@ -1,53 +1,37 @@
 import asyncio
 import uuid
 from typing import TYPE_CHECKING
-from urllib.parse import urlsplit
 
 import boto3
 from fastapi import UploadFile
+
+from app.core.config import settings
 
 if TYPE_CHECKING:
     from app.core.exceptions import ServiceException, ValidationException
 
 
 def get_max_image_size_bytes() -> int:
-    from app.core.config import settings
     return settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
 
 class StorageService:
     def __init__(self):
-        from app.core.config import settings
-        self.client = boto3.client(
-            "s3",
-            endpoint_url=settings.S3_ENDPOINT_URL,
-            aws_access_key_id=settings.S3_ACCESS_KEY,
-            aws_secret_access_key=settings.S3_SECRET_KEY,
-            region_name="auto",
-        )
-
         self.bucket = settings.S3_BUCKET_NAME
 
-        # Presigned URLs must be reachable from the browser. S3_ENDPOINT_URL
-        # is often an internal container hostname (e.g. http://minio:9000)
-        # that browsers cannot resolve, while S3_PUBLIC_URL is the public
-        # origin. The SigV4 signature includes the Host header, so the URL
-        # must be generated with the SAME origin the browser will use. We
-        # sign with a client pointed at the public origin (presigning never
-        # contacts the server, so the internal endpoint is not needed).
-        public = urlsplit(settings.S3_PUBLIC_URL) if settings.S3_PUBLIC_URL else None
-        if public and public.scheme and public.netloc:
-            self.presign_endpoint = f"{public.scheme}://{public.netloc}"
-        else:
-            self.presign_endpoint = settings.S3_ENDPOINT_URL
+        client_config = {
+            "service_name": "s3",
+            "endpoint_url": settings.S3_ENDPOINT_URL,
+            "aws_access_key_id": settings.S3_ACCESS_KEY,
+            "aws_secret_access_key": settings.S3_SECRET_KEY,
+            "region_name": "auto",
+            "config": boto3.session.Config(
+                signature_version="s3v4",
+            ),
+        }
 
-        self.presign_client = boto3.client(
-            "s3",
-            endpoint_url=self.presign_endpoint,
-            aws_access_key_id=settings.S3_ACCESS_KEY,
-            aws_secret_access_key=settings.S3_SECRET_KEY,
-            region_name="auto",
-        )
+        self.client = boto3.client(**client_config)
+        self.presign_client = boto3.client(**client_config)
 
     async def _upload(
         self,
@@ -82,6 +66,7 @@ class StorageService:
         key: str | None = None,
     ) -> str:
         from app.core.config import settings
+
         if not file.content_type:
             raise ValidationException("Invalid file")
 
@@ -99,8 +84,8 @@ class StorageService:
         max_size = get_max_image_size_bytes()
         if len(content) > max_size:
             raise ValidationException(
-            f"Image size must be {settings.MAX_UPLOAD_SIZE_MB}MB or less"
-        )
+                f"Image size must be {settings.MAX_UPLOAD_SIZE_MB}MB or less"
+            )
         await file.seek(0)
 
         s3_key = await self._upload(file, folder, key=key)
@@ -113,6 +98,7 @@ class StorageService:
         key: str | None = None,
     ) -> str:
         from app.core.config import settings
+
         if not file.content_type:
             raise ValidationException("Invalid file")
 
@@ -270,6 +256,7 @@ def get_storage_service() -> StorageService:
 
 # Backward compatibility - will initialize on first access
 storage_service = None
+
 
 # Make storage_service a property-like object that initializes on first attribute access
 class _LazyStorageService:
