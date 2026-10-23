@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.coupon import crud_coupon, crud_coupon_usage
-from app.models.coupon import Coupon, CouponUsage, DiscountType, RestrictionType
+from app.models.coupon import CouponUsage, DiscountType, RestrictionType
 from app.models.product import ProductVariant
+from app.schemas.coupon import CouponRead
 
 if TYPE_CHECKING:
     from app.models.course import Course
@@ -50,7 +51,7 @@ class EligibleItem:
 class CouponValidationResult:
     def __init__(
         self,
-        coupon: Coupon,
+        coupon: CouponRead,
         eligible_items: list[EligibleItem],
         eligible_subtotal: Decimal,
         discount_amount: Decimal,
@@ -79,15 +80,19 @@ class CouponService:
         self,
         session: AsyncSession,
         code: str,
-    ) -> Coupon | None:
+    ) -> CouponRead | None:
         return await crud_coupon.get(
-            session, code=self.normalize_code(code), is_active=True
+            session,
+            code=self.normalize_code(code),
+            is_active=True,
+            schema_to_select=CouponRead,
+            return_as_model=True,
         )
 
     async def get_eligible_items(
         self,
         session: AsyncSession,
-        coupon: Coupon,
+        coupon: CouponRead,
         cart_items: list[dict],
     ) -> list[EligibleItem]:
         eligible_items: list[EligibleItem] = []
@@ -169,13 +174,13 @@ class CouponService:
 
             courses = await crud_course.get_multi(
                 db=session,
-                id=list(course_ids_to_fetch),
+                id__in=list(course_ids_to_fetch),
                 is_deleted=False,
                 is_published=True,
                 schema_to_select=CourseRead,
                 return_as_model=True,
             )
-            for course in courses:
+            for course in courses["data"]:
                 if course.price > 0:
                     courses_map[course.id] = course
 
@@ -198,11 +203,11 @@ class CouponService:
             if variant_ids:
                 variants = await crud_product_variant.get_multi(
                     db=session,
-                    id=list(variant_ids),
+                    id__in=list(variant_ids),
                     schema_to_select=ProductVariantRead,
                     return_as_model=True,
                 )
-                for variant in variants:
+                for variant in variants["data"]:
                     variants_map[str(variant.id)] = variant
 
             # Fetch default variants by product ID
@@ -273,10 +278,8 @@ class CouponService:
                         item_type="painting",
                         item_id=item["id"],
                         variant_id=variant.id,
-                        title=variant.product.title if variant.product else "Unknown",
-                        variant_name=variant.variant_type.name
-                        if variant.variant_type
-                        else "Default",
+                        title="Painting",
+                        variant_name=variant.variant_type_name or "Default",
                         quantity=item.get("quantity", 1),
                         unit_price=variant.price,
                     )
@@ -286,14 +289,17 @@ class CouponService:
 
     async def _get_course(
         self, session: AsyncSession, course_id: uuid.UUID
-    ) -> Course | None:
+    ) -> CourseRead | None:
         from app.crud.course import crud_course
+        from app.schemas.course import CourseRead
 
         return await crud_course.get(
             db=session,
             id=course_id,
             is_deleted=False,
             is_published=True,
+            schema_to_select=CourseRead,
+            return_as_model=True,
         )
 
     async def _get_variant(
@@ -327,7 +333,9 @@ class CouponService:
     ) -> Decimal:
         return sum((item.line_total for item in eligible_items), Decimal("0"))
 
-    def calculate_discount(self, coupon: Coupon, eligible_subtotal: Decimal) -> Decimal:
+    def calculate_discount(
+        self, coupon: CouponRead, eligible_subtotal: Decimal
+    ) -> Decimal:
         if coupon.discount_type == DiscountType.PERCENTAGE:
             discount = (
                 eligible_subtotal * coupon.discount_value / Decimal("100")
@@ -363,7 +371,7 @@ class CouponService:
     async def validate_coupon(
         self,
         session: AsyncSession,
-        coupon: Coupon,
+        coupon: CouponRead,
         user_id: uuid.UUID,
         eligible_items: list[EligibleItem],
         cart_subtotal: Decimal,
@@ -479,7 +487,7 @@ class CouponService:
         return Decimal("0")
 
     async def _is_item_eligible(
-        self, session: AsyncSession, coupon: Coupon, item: dict
+        self, session: AsyncSession, coupon: CouponRead, item: dict
     ) -> bool:
         if item.get("type") == "course":
             if coupon.applies_to not in ("all", "courses", "selected_courses"):
@@ -504,7 +512,7 @@ class CouponService:
     async def consume_coupon(
         self,
         session: AsyncSession,
-        coupon: Coupon,
+        coupon: CouponRead,
         user_id: uuid.UUID,
         order_id: uuid.UUID | None,
         course_payment_id: uuid.UUID | None,

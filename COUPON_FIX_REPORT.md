@@ -15,6 +15,7 @@
 - Painting checkout uses server-created Razorpay orders and server-side payment verification. The page requires a saved shipping address; the order service checks address ownership and rejects callbacks whose Razorpay order ID does not match the saved order.
 - Selected-product restrictions were not applied consistently in coupon recalculation, and a painting variant could be paired with a different product ID. Eligibility checks now enforce the restriction and variant/product match.
 - Admin coupon creation/update now validates discount pairs, date ranges, and selected-product relationships; relation writes no longer commit independently. Usage history now loads the user and course title in batch and returns pagination metadata. The admin list resets pagination when filters/search change and exposes list errors with retry.
+- Selected course and painting IDs are queried through FastCRUD's `id__in` operator; FastCRUD mapping results are read by key when reporting invalid IDs. A regression test covers multiple selected IDs and a missing course ID.
 - Coupon input clears an applied coupon when its cart signature changes. The course purchase screen displays the backend-calculated payable total.
 - Docker-backed API testing exposed and fixed coupon insert timestamps missing against the migration's NOT NULL columns, admin list/get code treating FastCRUD dictionaries as ORM rows, unsupported coupon search filtering, malformed pagination response construction, and usage-history eager loading applied to a non-ORM select.
 - The frontend coupon request now calls `/api/coupons/validate`, matching the mounted API route.
@@ -56,6 +57,12 @@
 - `pnpm type-check` — passed after the API-client refactor.
 - Targeted ESLint for coupon APIs, selector APIs, coupon input, and coupon create/edit pages — passed after the refactor.
 - `pnpm build` — passed after the refactor; coupon admin pages and checkout compiled.
+
+### Selected item ID query regression
+
+- Fixed coupon creation and update validation passing an ID list to FastCRUD's scalar `id` filter, which caused PostgreSQL/asyncpg to raise `DataError` and return HTTP 500. Both paths now use `id__in`.
+- Pure coupon tests after the fix: **23 passed**; targeted Ruff and Python compile checks passed.
+- The added PostgreSQL-backed admin regression test could not be executed in this follow-up because Docker Desktop's engine was unavailable (`docker-compose` could not connect to `dockerDesktopLinuxEngine`). Re-run `tests/test_coupon_api.py` after starting Docker Desktop.
 
 ## Remaining issues and risks
 

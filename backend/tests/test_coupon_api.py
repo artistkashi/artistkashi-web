@@ -2,6 +2,8 @@ from uuid import uuid4
 
 import pytest
 
+from app.models.course import Course
+from app.models.product import Product, ProductStatus
 from app.models.user import Role
 
 
@@ -79,6 +81,55 @@ async def test_coupon_admin_api_rejects_non_admin(test_client, authenticated_use
         "/api/admin/coupons", headers=authenticated_user["headers"]
     )
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_admin_coupon_validates_multiple_selected_item_ids(
+    test_client, authenticated_user, db_session
+):
+    authenticated_user["user"].role = Role.ADMIN
+    course = Course(
+        title="Selected coupon course",
+        slug=f"coupon-course-{uuid4().hex[:8]}",
+        price=100,
+        is_published=True,
+    )
+    painting = Product(
+        title="Selected coupon painting",
+        slug=f"coupon-painting-{uuid4().hex[:8]}",
+        status=ProductStatus.PUBLISHED,
+    )
+    db_session.add_all([course, painting])
+    await db_session.commit()
+
+    payload = {
+        "code": f"SELECTED-{uuid4().hex[:8]}",
+        "discount_type": "percentage",
+        "discount_value": 10,
+        "applies_to": "all",
+        "restriction_type": "selected_products",
+        "min_order_amount": 0,
+        "usage_limit": None,
+        "per_user_limit": 1,
+        "is_active": True,
+        "course_ids": [str(course.id)],
+        "painting_ids": [str(painting.id)],
+    }
+
+    created = await test_client.post(
+        "/api/admin/coupons", json=payload, headers=authenticated_user["headers"]
+    )
+    assert created.status_code == 200, created.text
+    coupon_id = created.json()["data"]["id"]
+    assert created.json()["data"]["course_ids"] == [str(course.id)]
+    assert created.json()["data"]["painting_ids"] == [str(painting.id)]
+
+    invalid_update = await test_client.patch(
+        f"/api/admin/coupons/{coupon_id}",
+        json={"course_ids": [str(uuid4())]},
+        headers=authenticated_user["headers"],
+    )
+    assert invalid_update.status_code == 422
 
 
 @pytest.mark.asyncio

@@ -34,7 +34,7 @@ class CRUDCoupon(BaseCRUD):
         """Get course IDs associated with a coupon."""
         stmt = await crud_coupon_course.select(coupon_id=coupon_id)
         result = await db.execute(stmt)
-        return [row.course_id for row in result.scalars().all()]
+        return [row.course_id for row in result.all()]
 
     async def get_paintings_for_coupon(
         self,
@@ -44,7 +44,7 @@ class CRUDCoupon(BaseCRUD):
         """Get painting IDs associated with a coupon."""
         stmt = await crud_coupon_painting.select(coupon_id=coupon_id)
         result = await db.execute(stmt)
-        return [row.product_id for row in result.scalars().all()]
+        return [row.product_id for row in result.all()]
 
     async def set_coupon_courses(
         self,

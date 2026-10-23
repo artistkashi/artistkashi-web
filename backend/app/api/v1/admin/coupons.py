@@ -102,12 +102,13 @@ async def create_coupon(
         # Verify all courses exist
         courses = await crud_course.get_multi(
             db=session,
-            id=payload.course_ids,
+            id__in=payload.course_ids,
             is_deleted=False,
             is_published=True,
         )
-        if len(courses) != len(payload.course_ids):
-            found_ids = {c.id for c in courses}
+        course_rows = courses["data"]
+        if len(course_rows) != len(payload.course_ids):
+            found_ids = {course.id for course in course_rows}
             missing_ids = [cid for cid in payload.course_ids if cid not in found_ids]
             raise ValidationException(
                 message=f"Courses not found: {missing_ids}",
@@ -120,10 +121,11 @@ async def create_coupon(
         # Verify all paintings exist
         paintings = await crud_product.get_multi(
             db=session,
-            id=payload.painting_ids,
+            id__in=payload.painting_ids,
         )
-        if len(paintings) != len(payload.painting_ids):
-            found_ids = {p.id for p in paintings}
+        painting_rows = paintings["data"]
+        if len(painting_rows) != len(payload.painting_ids):
+            found_ids = {painting.id for painting in painting_rows}
             missing_ids = [pid for pid in payload.painting_ids if pid not in found_ids]
             raise ValidationException(
                 message=f"Paintings not found: {missing_ids}",
@@ -369,12 +371,13 @@ async def update_coupon(
         if course_ids:
             courses = await crud_course.get_multi(
                 db=session,
-                id=course_ids,
+                id__in=course_ids,
                 is_deleted=False,
                 is_published=True,
             )
-            if len(courses) != len(course_ids):
-                found_ids = {c.id for c in courses}
+            course_rows = courses["data"]
+            if len(course_rows) != len(course_ids):
+                found_ids = {course.id for course in course_rows}
                 missing_ids = [cid for cid in course_ids if cid not in found_ids]
                 raise ValidationException(
                     message=f"Courses not found: {missing_ids}",
@@ -387,10 +390,11 @@ async def update_coupon(
         if painting_ids:
             paintings = await crud_product.get_multi(
                 db=session,
-                id=painting_ids,
+                id__in=painting_ids,
             )
-            if len(paintings) != len(painting_ids):
-                found_ids = {p.id for p in paintings}
+            painting_rows = paintings["data"]
+            if len(painting_rows) != len(painting_ids):
+                found_ids = {painting.id for painting in painting_rows}
                 missing_ids = [pid for pid in painting_ids if pid not in found_ids]
                 raise ValidationException(
                     message=f"Paintings not found: {missing_ids}",
